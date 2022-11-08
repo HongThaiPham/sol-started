@@ -1,57 +1,52 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import {
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
+import { BalanceDisplay } from "../components/BalanceDisplay";
+import { PingButton } from "../components/PingButton";
+require("@solana/wallet-adapter-react-ui/styles.css");
 
 export default function Home() {
+  const { publicKey, sendTransaction } = useWallet();
+  const { connection } = useConnection();
+  const sendSol = (event: any) => {
+    event.preventDefault();
+
+    const transaction = new Transaction();
+    const recipientPubKey = new PublicKey(
+      "3qK87Xu54yDQXkrvYqmZ6qTPeUbWk5g1in1QMnB5RaDS"
+    );
+
+    const sendSolInstruction = SystemProgram.transfer({
+      fromPubkey: publicKey!,
+      toPubkey: recipientPubKey,
+      lamports: LAMPORTS_PER_SOL * 0.1,
+    });
+
+    transaction.add(sendSolInstruction);
+    sendTransaction(transaction, connection).then((sig) => {
+      console.log(sig);
+    });
+  };
+
   return (
-    <div className={styles.container}>
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js 13!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://beta.nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js 13</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Explore the Next.js 13 playground.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates/next.js/app-directory?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>Deploy your Next.js site to a public URL with Vercel.</p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
+    <div
+      style={{
+        display: "flex",
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <WalletMultiButton />
+      <BalanceDisplay />
+      <button onClick={sendSol}>send</button>
+      <PingButton />
     </div>
-  )
+  );
 }
